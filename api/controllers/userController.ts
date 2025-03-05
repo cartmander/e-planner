@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
 import User, { IUser } from "../models/User.js";
 
-let users: any[] = [];
-
 export const createUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const newUser = new User(req.body);
         await newUser.save();
 
-        res.status(201).json({ message: `User ${newUser.firstName} added successfully`, user: newUser });
+        res.status(201).json({ message: `User ${newUser.firstName} added successfully`, newUser });
     } 
     
     catch (error) {
@@ -18,36 +16,57 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 
 export const readAllUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const users: IUser[] = await User.find();
-        res.json(users);
-    } catch (error) {
+        const users = await User.find() as IUser[];
+        res.status(200).json({ message: `Users listed successfully`, users});
+    } 
+    
+    catch (error) {
         res.status(500).json({ message: "Error fetching users", error });
     }
 }
 
-export const readUser = (req: Request, res: Response) => {
+export const readUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const foundUser = users.find(user => user.id === id);
-
-    res.send(`User is: ${foundUser?.firstName}`);
+    try {
+        const user = await User.findOne({ id }) as IUser;
+        res.status(200).json({ message: `User ${user.id} listed successfully`, user});
+    } 
+    
+    catch (error) {
+        res.status(500).json({ message: "Error fetching user", error });
+    }
 }
 
-export const updateUser = (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { firstName, lastName, age } = req.body;
+    try {
+        const updatedUser = await User.findOneAndUpdate(
+            { id },
+            { $set: req.body },
+            { new: true }
+        ) as IUser;
+        
+        res.status(200).json({ message: `User ${updatedUser.id} updated successfully`, updatedUser });
+    } 
 
-    const user = users.find((user) => user.id == id);
-
-    if (firstName !== undefined) user!.firstName = firstName;
-    if (lastName !== undefined) user!.lastName = lastName;
-    if (age !== undefined) user!.age = age;
-
-    res.send(`User with the id ${id} has been updated to the database.`);
+    catch (error) {
+        res.status(500).json({ message: "Error updating user", error });
+    }
 }
 
-export const deleteUser = (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
-    users = users.filter(user => user.id != id);
-    res.send(`User with the id ${id} has been deleted from the database.`);
+    try {
+        const deletedUser = await User.findOneAndDelete(
+            { id },
+            { $set: req.body }
+        ) as IUser;
+
+        res.status(200).json({ message: `User ${deletedUser.id} updated successfully`, deletedUser });
+    }
+
+    catch (error) {
+        res.status(500).json({ message: "Error deleting user", error });
+    }
 }
