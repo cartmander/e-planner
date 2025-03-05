@@ -1,6 +1,12 @@
 import express, { Application, Request, Response } from "express";
 import bodyParser from "body-parser";
-import usersRoutes from "./routes/userRoute";
+import usersRoutes from "./routes/userRoute.js";
+import dotenv from "dotenv";
+import connectDB from "./config/database.js";
+
+dotenv.config();
+
+connectDB();
 
 const app: Application = express();
 const PORT = 5000;

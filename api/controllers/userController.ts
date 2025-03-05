@@ -1,20 +1,28 @@
 import { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
+import User, { IUser } from "../models/User.js";
 
 let users: any[] = [];
 
-export const createUser = (req: Request, res: Response) => {
-    const user = req.body;
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const newUser = new User(req.body);
+        await newUser.save();
 
-    const userId = uuidv4();
-    const userWithId = { ... user, id: userId }
-
-    users.push(userWithId);
-    res.send(`User with the name ${user.firstName} has been added to the database.`);
+        res.status(201).json({ message: `User ${newUser.firstName} added successfully`, user: newUser });
+    } 
+    
+    catch (error) {
+        res.status(500).json({ message: "Error creating user", error });
+    }
 }
 
-export const readAllUsers = (req: Request, res: Response) => {
-    res.send(users);
+export const readAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const users: IUser[] = await User.find();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching users", error });
+    }
 }
 
 export const readUser = (req: Request, res: Response) => {

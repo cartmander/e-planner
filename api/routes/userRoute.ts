@@ -1,9 +1,10 @@
 import express from "express";
-import { createUser, deleteUser, readAllUsers, readUser, updateUser } from "../controllers/userController";
+import { createUser, deleteUser, readAllUsers, readUser, updateUser } from "../controllers/userController.js";
+import { validateUser } from "../middleware/validateUser.js";
 
 const router = express.Router();
 
-router.post("/", createUser);
+router.post("/", validateUser, createUser);
 
 router.get("/", readAllUsers);
 
